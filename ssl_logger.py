@@ -234,7 +234,7 @@ _FRIDA_SCRIPT = """
 ssl_sessions = {}
 
 
-def ssl_log(process, pcap=None, verbose=False):
+def ssl_log(process, pcap=None, verbose=False, remote=False):
   """Decrypts and logs a process's SSL traffic.
 
   Hooks the functions SSL_read() and SSL_write() in a given process and logs
@@ -425,4 +425,4 @@ Examples:
   parsed = parser.parse_args()
 
   ssl_log(int(parsed.process) if parsed.process.isdigit() else parsed.process,
-          parsed.pcap, parsed.verbose)
+          parsed.pcap, parsed.verbose, parsed.remote)
