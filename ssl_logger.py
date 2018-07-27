@@ -236,7 +236,7 @@ _FRIDA_SCRIPT = """
 ssl_sessions = {}
 
 
-def ssl_log(process, pcap=None, verbose=False):
+def ssl_log(process, pcap=None, verbose=False, wait=False):
   """Decrypts and logs a process's SSL traffic.
 
   Hooks the functions SSL_read() and SSL_write() in a given process and logs
@@ -353,6 +353,13 @@ def ssl_log(process, pcap=None, verbose=False):
       log_pcap(pcap_file, p["ssl_session_id"], p["function"], p["src_addr"],
                p["src_port"], p["dst_addr"], p["dst_port"], data)
 
+  while wait:
+    try:
+      frida.get_local_device().get_process(process)
+      break
+    except frida.ProcessNotFoundError:
+      time.sleep(0.1)
+
   session = frida.attach(process)
 
   if pcap:
@@ -407,13 +414,20 @@ Examples:
 """)
 
   args = parser.add_argument_group("Arguments")
-  args.add_argument("-pcap", metavar="<path>", required=False,
+  args.add_argument("-pcap", metavar="<path>",
                     help="Name of PCAP file to write")
-  args.add_argument("-verbose", required=False, action="store_const",
-                    const=True, help="Show verbose output")
+  args.add_argument("-verbose", action="store_true",
+                    help="Show verbose output")
+  args.add_argument("-wait", action="store_true",
+                    help="Wait for the process")
+  args.add_argument("-ssl", metavar="<lib>",
+                    help="SSL library to hook (default: *libssl*)")
   args.add_argument("process", metavar="<process name | process id>",
                     help="Process whose SSL calls to log")
   parsed = parser.parse_args()
 
+  if parsed.ssl is not None:
+    _FRIDA_SCRIPT = _FRIDA_SCRIPT.replace('*libssl*', parsed.ssl)
+
   ssl_log(int(parsed.process) if parsed.process.isdigit() else parsed.process,
-          parsed.pcap, parsed.verbose)
+          parsed.pcap, parsed.verbose, parsed.wait)
