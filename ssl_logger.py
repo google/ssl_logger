@@ -420,9 +420,14 @@ Examples:
                     help="Show verbose output")
   args.add_argument("-wait", action="store_true",
                     help="Wait for the process")
+  args.add_argument("-ssl", metavar="<lib>",
+                    help="SSL library to hook (default: *libssl*)")
   args.add_argument("process", metavar="<process name | process id>",
                     help="Process whose SSL calls to log")
   parsed = parser.parse_args()
+
+  if parsed.ssl is not None:
+    _FRIDA_SCRIPT = _FRIDA_SCRIPT.replace('*libssl*', parsed.ssl)
 
   ssl_log(int(parsed.process) if parsed.process.isdigit() else parsed.process,
           parsed.pcap, parsed.verbose, parsed.wait)
