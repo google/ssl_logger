@@ -54,10 +54,17 @@ _FRIDA_SCRIPT = """
   /**
    * Initializes 'addresses' dictionary and NativeFunctions.
    */
+  var addresses = {};
+  var SSL_get_fd;
+  var SSL_get_session;
+  var SSL_SESSION_get_id;
+  var getpeername;
+  var getsockname;
+  var ntohs;
+  var ntohl;
+
   function initializeGlobals()
   {
-    addresses = {};
-
     var resolver = new ApiResolver("module");
 
     var exps = [
